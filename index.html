@@ -62,6 +62,9 @@
 			.theaterTable {
 				width: 100%;
 			}
+			.invalidSubmission {
+				color: red;
+			}
 		</style>
 		<meta name="viewport" content="initial-scale=1.0, maximum-scale=1.0, width=device-width, user-scalable=no" />
 	</head>
@@ -114,6 +117,8 @@
 						<input type="radio" id="facedown" name="faceUp" value="false">
 						<label for="facedown">Face-Down Position</label><br/>
 						<button id='submitCardButton' disabled='disabled' onclick='submitCard()'>Submit</button>
+						<p id='invalidSubmission' class='invalidSubmission'></p>
+						<button id='forfeitButton' onclick='forfeit()'>Withdraw (Forfeit this Battle)</button>
 					</p>
 				</div>
 				<div id='turnCodeDiv' class='invisible'>
@@ -129,8 +134,8 @@
 						<td colspan='4' class='centerAlignedTD'>Scoring:</td>
 					</tr>
 					<tr>
-						<td colspan='2' class='centerAlignedTD'>Player One<br/>(Wins tied theaters)</td>
-						<td colspan='2' class='centerAlignedTD'>Player Two<br/>(Loses tied theaters)</td>
+						<td colspan='2' class='centerAlignedTD'><span id='firstScoringPlayer'>Player One</span><br/>(Wins tied theaters)</td>
+						<td colspan='2' class='centerAlignedTD'><span id='secondScoringPlayer'>Player Two</span><br/>(Loses tied theaters)</td>
 					</tr>
 					<tr>
 						<td class='centerAlignedTD'>Cards left in your Hand:</td>

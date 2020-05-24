@@ -14,6 +14,18 @@ var unitAbilityTypes =
 	"None": 2
 }
 
+function getFirstScoringPlayer()
+{
+	if (battleNum%2 == 1)
+	{
+		return players["playerOne"];
+	}
+	else
+	{
+		return players["playerTwo"];
+	}
+}
+
 function newCard(nameText, strength, abilityText, type, abilityType)
 {
 	return {

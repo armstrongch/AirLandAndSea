@@ -16,6 +16,21 @@ function drawTurn()
 	$('#opponentHand').html("Opponent's Hand: " + opposingPlayer.hand.length + " Cards");
 	$('#theaterTable').html(getTheaterTableHTML());
 	$('#scoreP').html("Score:<br/>" + activePlayer.name + ": " + activePlayer.points + "<br/>" + opposingPlayer.name + ": " + opposingPlayer.points);
+	drawScorecard();
+}
+
+function drawScorecard()
+{
+	var firstScoringPlayer = getFirstScoringPlayer();
+	$('#firstScoringPlayer').html(firstScoringPlayer.name);
+	if (firstScoringPlayer.name == "Player One")
+	{
+		$('#secondScoringPlayer').html("Player Two");
+	}
+	else
+	{
+		$('#secondScoringPlayer').html("Player One");
+	}
 }
 
 function selectCard(cardStrength, cardType)
@@ -54,5 +69,27 @@ function submitCard()
 
 function validCardSubmission(targetTheater, faceUp)
 {
-	return true;
+	if ((selectedCard.type != targetTheater) && (faceUp))
+	{
+		var theaterString = "";
+		switch(selectedCard.type)
+		{
+			case unitTypes.Land:
+				theaterString = "Land";
+				break;
+			case unitTypes.Sea:
+				theaterString = "Sea";
+				break;
+			case unitTypes.Air:
+				theaterString = "Air";
+				break;
+		}
+		$('#invalidSubmission').html(theaterString + " units may only be played face-up into the " + theaterString + " theater.");
+		return false;
+	}
+	else
+	{
+		$('#invalidSubmission').html('');
+		return true;
+	}
 }
