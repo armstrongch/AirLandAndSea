@@ -8,17 +8,19 @@ function parseTurnCode(turnCode)
 	var fIndex = turnCode.indexOf("F");
 	var gIndex = turnCode.indexOf("G");
 	var hIndex = turnCode.indexOf("H");
+	var iIndex = turnCode.indexOf("I");
 	
 	var activePlayerHand_code = turnCode.substring(0, aIndex);
 	var activePlayerDeployed_code = turnCode.substring(aIndex+1, bIndex);
 	var opposingPlayerHand_code = turnCode.substring(bIndex+1, cIndex);
 	var opposingPlayerDeployed_code = turnCode.substring(cIndex+1, dIndex);
-	var playerNum_code = turnCode.substring(dIndex+1, eIndex);
+	var specialStatus_code = turnCode.substring(dIndex+1, eIndex);
 	
 	var battleNum_code = turnCode.substring(eIndex+1, fIndex);
-	var activePlayer_code = turnCode.substring(fIndex+1, gIndex);
-	var opposingPlayer_code = turnCode.substring(gIndex+1, hIndex);
-	var theaterOrder_code = turnCode.substring(hIndex+1);
+	var activePlayerPoints_code = turnCode.substring(fIndex+1, gIndex);
+	var opposingPlayerPoints_code = turnCode.substring(gIndex+1, hIndex);
+	var theaterOrder_code = turnCode.substring(hIndex+1, iIndex);
+	var activePlayer_code = turnCode.substring(iIndex+1);
 
 	battleNum = parseInt(battleNum_code);
 	
@@ -44,7 +46,7 @@ function parseTurnCode(turnCode)
 		}
 	}
 	
-	if (activePlayer_code == "1")
+	if (activePlayer_code == "2")
 	{
 		activePlayer = players["playerOne"];
 		opposingPlayer = players["playerTwo"];
@@ -79,7 +81,64 @@ function parseTurnCode(turnCode)
 		activePlayer.deployed.push(getCardFromCardCode(cardCode));
 	}
 	
-	setupTurn();
+	activePlayer.points = parseInt(activePlayerPoints_code);
+	opposingPlayer.points = parseInt(opposingPlayerPoints_code);
+	
+	drawTurn();
+	
+	var specialStatusString = "<br/>";
+	
+	// If the previous player withdrew from the battle
+	if (specialStatus_code == 1)
+	{
+		specialStatusString = opposingPlayer.name + " has withdrawn from the battle.";
+		battleNum++;
+		
+		buildUnitDeck();
+		shuffleUnitCards('test');
+		shuffleTheaterCards('test');
+		dealStartingHands();
+		
+		drawTurn();
+		
+		var firstScoringPlayer = getFirstScoringPlayer();
+		if (firstScoringPlayer.name == activePlayer.name)
+		{
+			specialStatusString += " You will make the first move in battle number " + battleNum + ".";
+		}
+		else
+		{
+			specialStatusString += " " + opposingPlayer.name + " will make the first move in battle number " + battleNum + ".";
+			$('#cardSubmissionDiv').addClass('invisible');
+			$('#turnCodeDiv').removeClass('invisible');
+			$('#turnCodeDiv').html("<p>Turn Code:</p><p>" + generateTurnCode("") + "</p>");
+		}
+	}
+	// If both players have played all of their cards
+	else if (activePlayer.hand.length == 0)
+	{
+		var playerOne_AirScore = getTheaterScore(unitTypes.Air, players["playerOne"]);
+		var playerTwo_AirScore = getTheaterScore(unitTypes.Air, players["playerTwo"]);
+		
+		var playerOne_SeaScore = getTheaterScore(unitTypes.Sea, players["playerOne"]);
+		var playerTwo_SeaScore = getTheaterScore(unitTypes.Sea, players["playerTwo"]);
+		
+		var playerOne_LandScore = getTheaterScore(unitTypes.Land, players["playerOne"]);
+		var playerTwo_LandScore = getTheaterScore(unitTypes.Land, players["playerTwo"]);
+		
+	}
+	
+	
+	// If a player has scored 12 points, (ending the game)
+	if ((players["playerOne"].points >= 12) || (players["playerTwo"].points >= 12))
+	{
+		specialStatusString = "<br/>Game Over!";
+		$('#cardSubmissionDiv').addClass('invisible');
+		$('#turnCodeDiv').removeClass('invisible');
+		$('#turnCodeDiv').html("<p>Turn Code:</p><p>" + generateTurnCode("") + "</p>");
+	}
+
+	$('#playerTurn').html($('#playerTurn').html() + "<br/>" + specialStatusString);
 }
 
 function getCardFromCardCode(cardCode)
@@ -110,7 +169,7 @@ function getCardFromCardCode(cardCode)
 	}
 }
 
-function generateTurnCode()
+function generateTurnCode(specialStatus)
 {
 	var activePlayerHand = "";
 	for (let i = 0; i < activePlayer.hand.length; i++)
@@ -138,12 +197,16 @@ function generateTurnCode()
 		opposingPlayerDeployed += getStatusCode(opposingPlayer.deployed[i]);
 	}
 	
-	//playerNum, battleNum, playerOnePoints, playerTwoPoints
+	var specialStatus_code = 0;
+	if (specialStatus == "forfeit")
+	{
+		specialStatus_code = 1;
+	}
 	
-	var playerNum = 1;
+	var activePlayerNum = 1;
 	if (activePlayer.name == "Player Two")
 	{
-		playerNum = 2;
+		activePlayerNum = 2;
 	}
 	
 	var theaterOrderString = "";
@@ -153,7 +216,7 @@ function generateTurnCode()
 	}
 	var theaterOrderIndexString = theaterOrder.indexOf(theaterOrderString).toString();
 	
-	var miscInfoString =  playerNum.toString() + "E" + battleNum.toString() + "F" + activePlayer.points.toString() + "G" + opposingPlayer.points.toString() + "H" + theaterOrderIndexString;
+	var miscInfoString =  specialStatus_code.toString() + "E" + battleNum.toString() + "F" + activePlayer.points.toString() + "G" + opposingPlayer.points.toString() + "H" + theaterOrderIndexString + "I" + activePlayerNum;
 	
 	var generatedTurnCode = activePlayerHand + "A" + activePlayerDeployed + "B" + opposingPlayerHand + "C" + opposingPlayerDeployed + "D" + miscInfoString;
 	
@@ -190,7 +253,7 @@ function getStatusCode(card)
 
 function validTurnCode(turnCode)
 {
-	const regex = /(\d{2})*(A{1})(\d{3})*(B{1})(\d{2})*(C{1})(\d{3})*(D{1})(\d{1})(E{1})(\d{1})+(F{1})(\d{1})+(G{1})(\d{1})+(H{1})(\d{1})/;
+	const regex = /(\d{2})*(A{1})(\d{3})*(B{1})(\d{2})*(C{1})(\d{3})*(D{1})(\d{1})(E{1})(\d{1})+(F{1})(\d{1})+(G{1})(\d{1})+(H{1})(\d{1})(I{1})(\d{1})/;
 	const found = turnCode.match(regex);
 	if ((found != null) && (found[0] == turnCode))
 	{

@@ -7,7 +7,7 @@ function continueGame()
 	}
 	else
 	{
-		alert("InvalidTurnCode")
+		$('#turnCodeInput').val("Invalid Turn Code!");
 	}
 }
 
@@ -25,11 +25,17 @@ function startGame()
 	
 	activePlayer = players["playerOne"];
 	opposingPlayer = players["playerTwo"];
-	setupTurn();
+	drawTurn();
 }
 
 function dealStartingHands()
 {
+	players["playerOne"].hand = [];
+	players["playerTwo"].hand = [];
+	
+	players["playerOne"].deployed = [];
+	players["playerTwo"].deployed = [];
+	
 	for (let i = 0; i < 6; i++)
 	{
 		players["playerOne"].hand.push(unitCards.pop());

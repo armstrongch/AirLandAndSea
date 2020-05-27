@@ -3,11 +3,6 @@ var opposingPlayer = -1;
 var selectedCard = null;
 var selectedCardIndex = -1;
 
-function setupTurn()
-{
-	drawTurn();
-}
-
 function drawTurn()
 {
 	$('#playerTurn').html(activePlayer.name + "'s Turn:");
@@ -53,7 +48,7 @@ function selectCard(cardStrength, cardType)
 function submitCard()
 {
 	var targetTheater = $('input[name=theater]:checked').val();
-	var faceUp = $('input[name=faceUp]:checked').val();
+	var faceUp = $('input[name=faceUp]:checked').val() == "true";
 	if (validCardSubmission(targetTheater, faceUp))
 	{
 		selectedCard.theater = targetTheater;
@@ -63,8 +58,24 @@ function submitCard()
 		drawTurn();
 		$('#cardSubmissionDiv').addClass('invisible');
 		$('#turnCodeDiv').removeClass('invisible');
-		$('#turnCodeDiv').html("<p>Turn Code:</p><p>" + generateTurnCode() + "</p>");
+		$('#turnCodeDiv').html("<p>Turn Code:</p><p>" + generateTurnCode("") + "</p>");
 	}
+}
+
+function forfeit()
+{
+	var firstScoringPlayer = getFirstScoringPlayer.name == activePlayer.name;
+	var numberOfCardsRemaining = activePlayer.hand.length;
+	var forfeitScore = getForfeitScore(firstScoringPlayer, numberOfCardsRemaining);
+	
+	opposingPlayer.points += parseInt(forfeitScore);
+	drawTurn();
+	
+	var forfeitText = "You have withdrawn from the battle with " + numberOfCardsRemaining + " cards remaining in your hand. " + opposingPlayer.name + " scores " + forfeitScore + " points.";
+	
+	$('#cardSubmissionDiv').html("<p>" + forfeitText + "</p>");
+	$('#turnCodeDiv').removeClass('invisible');
+	$('#turnCodeDiv').html("<p>Turn Code:</p><p>" + generateTurnCode("forfeit") + "</p>");
 }
 
 function validCardSubmission(targetTheater, faceUp)
